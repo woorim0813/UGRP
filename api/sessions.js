@@ -42,6 +42,32 @@ router.post('/add', (req, res) => {
       });
 })
 
+//송현민 PART
+//기능3. 세부 정보 로드
+app.post('/specificload', (req, res) => {
+  
+  var name = req.body["name"];
+  var category = req.body["catergory"];
+  var currentorder = req.body["currentorder"];
+  var finalorder = req.body["finalorder"];
+  var finaltime = req.body["finaltime"];
+  var location = req.body["location"];
+
+  connection.query(
+    'SELECT * FROM session WHERE name = ?, category = ?, currentorder = ?, finalorder = ?, finaltime = ?, location = ?' ,[name, category, currentorder, finalorder, finaltime, location], (error, results, field) => {
+      if(error) throw error
+      else{
+        console.log('Name is :', results.session.name);   //안되면 session 빼고 표현하기
+        console.log('category is :', results.session.category);
+        console.log('currentorder is :',results.session.currentorder);
+        console.log('finalorder is :',results.session.finalorder);
+        console.log('finaltime is :', results.session.finaltime);
+        console.log('location is :', results.session.location);
+        res.json(result);
+      }});
+});
+
+
 //20230827 11:48 수정 - 김정우 PART
 //기능4. 세션 삭제(자동!)
 var del_timer = setInterval(del_session, 1000); //1초마다 실행
