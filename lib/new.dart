@@ -1,4 +1,4 @@
-import 'package:color_example/home.dart';
+import 'package:color_example/realhome.dart';
 import 'package:flutter/material.dart';
 import 'package:remedi_kopo/remedi_kopo.dart';
 import 'package:http/http.dart' as http;
@@ -16,10 +16,11 @@ final List<Map<String, dynamic>> stores = [
   {"id":8, "name": '가정초밥',      "category": '일식', "menu": '초밥정식, 광어초밥'},
   {"id":9, "name": '신전떡볶이',    "category": '분식', "menu": '신전떡볶이, 김말이튀김'},
 ];
-
+  
 List<Map<String, dynamic>> filteredStores = stores;
 String selectedgage ='';
 String category = '';
+List Menu = [];
 
 
 
@@ -233,8 +234,26 @@ class add_new2State extends State<add_new2> {
   Widget currentpage = add_new();
   bool sangse = false;
 
+  void loadmenu (String name) async {
+    var reqbody = {
+      "name": name,
+    };
+
+    var response = await http.post(
+      Uri.parse("http://172.20.10.3:3000/sessions/orderload"),
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode(reqbody)
+    );
+
+    List<dynamic> jsonResponse = json.decode(response.body);
+    Menu = jsonResponse;
+  }
+
+
+
   @override
   Widget build(BuildContext context){
+    loadmenu(selectedgage);
     return Scaffold(
       appBar: AppBar(
         title: Text("세션 추가 페이지"),
@@ -425,8 +444,6 @@ class add_new2State extends State<add_new2> {
   }
 }
 
-List Menu = <String>['마라탕', '마라샹궈', '낙곱새', '짜장면', '볶음밥', '삼겹살'];
-
 class add_new3 extends StatefulWidget {
   final int finalorder;
   final int finaltime;
@@ -439,21 +456,6 @@ class add_new3 extends StatefulWidget {
 }
 
 class add_new3State extends State<add_new3> {
-  void addseesion () async{
-    var reqbody = {
-      "name": selectedgage,
-      "category": category,
-      "finalorder": widget.finalorder,
-      "finaltime": widget.finaltime,
-      "location": widget.location,
-    };
-
-    var response = await http.post(
-      Uri.parse("http://192.168.123.128:3000/sessions/add"),
-      headers: {"Content-Type": "application/json"},
-      body: jsonEncode(reqbody),
-    );
-  }
 
   var menunum = List<int>.filled(Menu.length, 0);
   @override
@@ -501,8 +503,17 @@ class add_new3State extends State<add_new3> {
                       Row(
                         children: [
                           SizedBox(width: 12),
-                          Text(Menu[index],
+                          Text(Menu[index]['menu'],
                             style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold, color: Color.fromARGB(200, 200, 1, 80),),
+                          ),
+                          Text(' / ',
+                            style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold, color: Color.fromARGB(200, 200, 1, 80),),
+                          ),
+                          Text(Menu[index]['price'].toString(),
+                            style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold, color: Color.fromARGB(255, 75, 75, 75),),
+                          ),
+                          Text('원',
+                            style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold, color: Color.fromARGB(255, 75, 75, 75),),
                           ),
                         ],
                       ),
@@ -560,11 +571,10 @@ class add_new3State extends State<add_new3> {
           onPressed: () {
 
             setState(() {
-              addseesion();
               Navigator.push(
                 context,
                 PageRouteBuilder(
-                  pageBuilder: (_, __, ___) => HomeScreen(),
+                  pageBuilder: (_, __, ___) => add_new4(widget.finalorder, widget.finaltime, widget.location),
                   transitionDuration: const Duration(seconds: 0),
                   )
                 );
@@ -576,4 +586,88 @@ class add_new3State extends State<add_new3> {
       )
     );
   }
+}
+
+class add_new4 extends StatefulWidget {
+  final int finalorder;
+  final int finaltime;
+  final String location;
+
+  const add_new4(this.finalorder, this.finaltime, this.location);
+
+  @override
+  add_new4State createState() => add_new4State();
+}
+
+class add_new4State extends State<add_new4> {
+  void addsession () async{
+    var reqbody = {
+      "name": selectedgage,
+      "category": category,
+      "finalorder": widget.finalorder,
+      "finaltime": widget.finaltime,
+      "location": widget.location,
+    };
+
+    var response = await http.post(
+      Uri.parse("http://172.20.10.3:3000/sessions/add"),
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode(reqbody),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        appBar: AppBar(title: Text('주문 확인'),),
+        body: Column(
+          children: [
+            Align(
+              alignment: Alignment.topCenter,
+              child: Row(
+                children:[
+                      Container(
+                        height: 150,width: 150,
+                        decoration: BoxDecoration(border: Border.all(color: Colors.red)),
+                        child: Text('가게 사진'),
+                      ),
+                      Container(
+                        width: 150,height: 150,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+
+                          children:[
+                            Text('가게이름',style: TextStyle(letterSpacing: 5.0, fontSize: 20,fontWeight: FontWeight.bold),),
+                            Text('도로명 주소',style: TextStyle(letterSpacing: 5.0, fontSize:20,fontWeight: FontWeight.bold),),
+                            Text('메뉴와 수량',style: TextStyle(letterSpacing: 5.0, fontSize: 20,fontWeight: FontWeight.bold),),
+
+                          ]
+                        ),
+                      )
+                    ],
+                  ),
+            ),
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: SizedBox(
+                height: 30, width: double.infinity,
+                child:
+                ElevatedButton(
+
+                  child: Text('가격(w)'),
+                  onPressed: (){
+                    addsession();
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => Main()));
+                  },
+                ),
+              )
+            )
+
+          ]
+
+      ),
+      );
+  }
+
 }
