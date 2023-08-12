@@ -4,24 +4,13 @@ import 'package:remedi_kopo/remedi_kopo.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
- 
-final List<Map<String, dynamic>> stores = [
-  {"id":1, "name": '훈이네 밥집',   "category": '한식', "menu": '제육덮밥, 닭갈비덮밥'},
-  {"id":2, "name": '교촌치킨',      "category": '야식', "menu": '후라이드 치킨, 양념치킨'},
-  {"id":3, "name": '알찬냄비',      "category": '한식', "menu": '낙곱새, 쭈꾸미볶음'},
-  {"id":4, "name": '청송함흥냉면',  "category": '한식', "menu": '물냉면, 비빔냉면'},
-  {"id":5, "name": '벽제갈비',      "category": '한식', "menu": '소갈비, 물냉면'},
-  {"id":6, "name": '신라호텔',      "category": '양식', "menu": '망고빙수, 스테이크'},
-  {"id":7, "name": '마라쿵푸',      "category": '아시안', "menu": '마라탕, 마라샹궈'},
-  {"id":8, "name": '가정초밥',      "category": '일식', "menu": '초밥정식, 광어초밥'},
-  {"id":9, "name": '신전떡볶이',    "category": '분식', "menu": '신전떡볶이, 김말이튀김'},
-];
-  
-List<Map<String, dynamic>> filteredStores = stores;
+
 String selectedgage ='';
 String category = '';
 List Menu = [];
 
+List store = [];
+List filteredstore = [];
 
 
 class add_new extends StatefulWidget {
@@ -31,9 +20,24 @@ class add_new extends StatefulWidget {
 }
 
 class add_newState extends State<add_new> {
-  
+  void loadstore () async {
+    var reqbody = {
+    };
+
+    var response = await http.post(
+      Uri.parse("http://192.168.123.182:3000/sessions/storeload"),
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode(reqbody)
+    );
+
+    List jsonResponse = json.decode(response.body);
+    store = jsonResponse;
+    filteredstore = store;
+  }
+
   @override
   Widget build(BuildContext context) {
+    loadstore();
     return Scaffold(
       appBar: AppBar(
         title: Text("세션 추가 페이지"),
@@ -57,25 +61,40 @@ class add_new1State extends State<add_new1> {
   String search = '';
 
   void runFilter(String Keyword) {
-    List<Map<String, dynamic>> results = [];
+    List results = [];
     if (Keyword == '전체'){
-      results = stores;
+      results = store;
     }
     else {
-      results = stores
+      results = store
                   .where((user) => 
                     user["category"].toLowerCase().contains(Keyword.toLowerCase()))
                   .toList();
     }
 
     setState(() {
-      filteredStores = results;
+      filteredstore = results;
     });
+  }
+  String DropdownValue = '전체';
+
+  void loadmenu (String name) async {
+    var reqbody = {
+      "name": name,
+    };
+
+    var response = await http.post(
+      Uri.parse("http://192.168.123.182:3000/sessions/orderload"),
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode(reqbody)
+    );
+
+    List<dynamic> jsonResponse = json.decode(response.body);
+    Menu = jsonResponse;
   }
 
   @override
   Widget build(BuildContext context){
-    String DropdownValue = '전체';
     return Scaffold(
       body: Column(
         children: [
@@ -159,17 +178,25 @@ class add_new1State extends State<add_new1> {
             ),
           ),
           SizedBox(height: 30,),
+          if (store.isEmpty) 
+            Center(
+              child: ElevatedButton(
+                child: Text('새로고침'), 
+                onPressed: (){setState(() {});},
+                )
+              )
+          else 
           Expanded(
               child: ListView.builder(
                 // items 변수에 저장되어 있는 모든 값 출력
-                itemCount: filteredStores.length,
+                itemCount: filteredstore.length,
                 itemBuilder: (BuildContext context, int index) {
                   // 검색 기능, 검색어가 있을 경우
                   if (search.isNotEmpty &&
-                      (!filteredStores[index]["menu"].toString()
+                      (!filteredstore[index]["menu"].toString()
                           .toLowerCase()
                           .contains(search.toLowerCase()) &&
-                        !filteredStores[index]["name"].toString()
+                        !filteredstore[index]["name"].toString()
                           .toLowerCase()
                           .contains(search.toLowerCase()))
                     ) {
@@ -185,10 +212,11 @@ class add_new1State extends State<add_new1> {
                           side: BorderSide(color: Color.fromARGB(200, 200, 1, 80), width: 2,),
                           borderRadius: BorderRadius.all(Radius.elliptical(20, 20))),
                         child: ListTile(
-                          title: Text(filteredStores[index]["name"], style:TextStyle(fontWeight: FontWeight.bold, fontSize: 22)),
+                          title: Text(filteredstore[index]["name"], style:TextStyle(fontWeight: FontWeight.bold, fontSize: 22)),
                           onTap: () {
-                            selectedgage = filteredStores[index]["name"];
-                            category = filteredStores[index]["category"];
+                            selectedgage = filteredstore[index]["name"];
+                            category = filteredstore[index]["category"];
+                            loadmenu(selectedgage);
                             Navigator.push(
                               context,
                               PageRouteBuilder(
@@ -197,7 +225,7 @@ class add_new1State extends State<add_new1> {
                               )
                             );
                           },
-                          subtitle: Text('음식 종류: ${filteredStores[index]['menu'].toString()}', maxLines: 1),
+                          subtitle: Text('음식 종류: ${filteredstore[index]['menu'].toString()}', maxLines: 1),
                           trailing: Text('기타 정보'),
                         ),
                       ),
@@ -240,7 +268,7 @@ class add_new2State extends State<add_new2> {
     };
 
     var response = await http.post(
-      Uri.parse("http://172.20.10.3:3000/sessions/orderload"),
+      Uri.parse("http://192.168.123.182:3000/sessions/orderload"),
       headers: {"Content-Type": "application/json"},
       body: jsonEncode(reqbody)
     );
@@ -253,7 +281,7 @@ class add_new2State extends State<add_new2> {
 
   @override
   Widget build(BuildContext context){
-    loadmenu(selectedgage);
+    //loadmenu(selectedgage);
     return Scaffold(
       appBar: AppBar(
         title: Text("세션 추가 페이지"),
@@ -297,6 +325,7 @@ class add_new2State extends State<add_new2> {
                         MaterialPageRoute(
                           builder: (context) => RemediKopo(),
                         ),
+                        // 주소 설정 안하고 뒤로 오는 경우 예외처리 필요
                       );
                       setState(() {
                         address = '${model.address}';
@@ -426,7 +455,7 @@ class add_new2State extends State<add_new2> {
             padding: EdgeInsets.zero,
             backgroundColor: Color.fromARGB(200, 200, 1, 80)
           ),
-          onPressed: () {
+          onPressed: () { // sangse 이용한 enable 필요
             setState(() {
               detailaddressstring = detailaddress.text.toString();
               fulladdress = address + ' ' + detailaddressstring;
@@ -458,6 +487,16 @@ class add_new3 extends StatefulWidget {
 class add_new3State extends State<add_new3> {
 
   var menunum = List<int>.filled(Menu.length, 0);
+
+  int calorder() {
+    double currentorder = 0;
+    for(int i = 0; i < Menu.length; i++) {
+      currentorder += Menu[i]['price'] * menunum[i]; 
+    }
+
+    return currentorder.round();
+  }
+
   @override
   Widget build(BuildContext context){
     return Scaffold(
@@ -569,12 +608,12 @@ class add_new3State extends State<add_new3> {
             backgroundColor: Color.fromARGB(200, 200, 1, 80)
           ),
           onPressed: () {
-
+            int cur = calorder();
             setState(() {
               Navigator.push(
                 context,
                 PageRouteBuilder(
-                  pageBuilder: (_, __, ___) => add_new4(widget.finalorder, widget.finaltime, widget.location),
+                  pageBuilder: (_, __, ___) => add_new4(cur, widget.finalorder, widget.finaltime, widget.location),
                   transitionDuration: const Duration(seconds: 0),
                   )
                 );
@@ -589,11 +628,12 @@ class add_new3State extends State<add_new3> {
 }
 
 class add_new4 extends StatefulWidget {
+  final int currentorder;
   final int finalorder;
   final int finaltime;
   final String location;
 
-  const add_new4(this.finalorder, this.finaltime, this.location);
+  const add_new4(this.currentorder, this.finalorder, this.finaltime, this.location);
 
   @override
   add_new4State createState() => add_new4State();
@@ -604,13 +644,14 @@ class add_new4State extends State<add_new4> {
     var reqbody = {
       "name": selectedgage,
       "category": category,
+      "currentorder": widget.currentorder,
       "finalorder": widget.finalorder,
       "finaltime": widget.finaltime,
       "location": widget.location,
     };
 
     var response = await http.post(
-      Uri.parse("http://172.20.10.3:3000/sessions/add"),
+      Uri.parse("http://192.168.123.182:3000/sessions/add"),
       headers: {"Content-Type": "application/json"},
       body: jsonEncode(reqbody),
     );
@@ -654,7 +695,6 @@ class add_new4State extends State<add_new4> {
                 height: 30, width: double.infinity,
                 child:
                 ElevatedButton(
-
                   child: Text('가격(w)'),
                   onPressed: (){
                     addsession();

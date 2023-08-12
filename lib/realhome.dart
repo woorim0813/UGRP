@@ -30,7 +30,8 @@ class _MainState extends State<Main> {
       body: pages[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
-        onTap: (index) => setState(() => _selectedIndex = index),
+        onTap: (index) => setState(() { 
+          _selectedIndex = index;}),
         items: [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),

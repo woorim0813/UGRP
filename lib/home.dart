@@ -7,7 +7,6 @@ import 'provider.dart';
 import 'package:provider/provider.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}):super(key: key);
 
   @override
   _HomeScreenState createState() => _HomeScreenState();
@@ -15,37 +14,38 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   List sessions = [];
-
   List filteredSessions = [];
-
+  
   void loadsessions () async {
     var reqbody = {
-      "userid": context.watch<UserProvider>().userid,
+      //"userid": context.watch<UserProvider>().userid,
     };
 
     var response = await http.post(
-      Uri.parse("http://192.168.123.128:3000/sessions/load"),
+      Uri.parse("http://192.168.123.182:3000/sessions/load"),
       headers: {"Content-Type": "application/json"},
       body: jsonEncode(reqbody)
     );
 
     List<dynamic> jsonResponse = json.decode(response.body);
-    // List<sessiondata> results = jsonResponse.map((dynamic item) => sessiondata.fromJson(item)).toList();
     
     sessions = jsonResponse;
-    filteredSessions = jsonResponse;
   }
 
-  TextEditingController searchController = TextEditingController();
+  TextEditingController searchController = TextEditingController(text: '');
   String search = '';
 
   void cardClickEvent(BuildContext context, int index) {
-    String content = filteredSessions[index]['name'];
+    String name = filteredSessions[index]['name'];
+    int finalorder = filteredSessions[index]['finalorder'];
+    int currentorder = filteredSessions[index]['currentorder'];
+    int finaltime = filteredSessions[index]['finaltime'];
+    String location = filteredSessions[index]['location'];
     Navigator.push(
       context,
       MaterialPageRoute(
         // 정의한 ContentPage의 폼 호출
-        builder: (context) => ContentPage(content: content),
+        builder: (context) => ContentPage(name: name, currentorder: currentorder, finalorder: finalorder, finaltime: finaltime, location: location,),
       ),
     );
   }
@@ -83,8 +83,63 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  @override
+  bool searching(String search) {
+    int a = 0;
 
+    if (search.isEmpty) {
+      return false;
+    }
+
+    for (int i = 0; i < filteredSessions.length; i++) {
+      if (filteredSessions[i]["name"].toString().toLowerCase().contains(search.toLowerCase())) 
+          {
+            a++;
+          }
+    }
+
+    if (a > 0) {
+      return false;
+    }
+
+    return true;
+  }
+
+  /*Widget _getFAB() {
+    return SpeedDial(
+          animatedIcon: AnimatedIcons.menu_close,
+          animatedIconTheme: IconThemeData(size: 22),
+          backgroundColor: Color(0xFF801E48),
+          visible: true,
+          curve: Curves.bounceIn,
+          children: [
+                // FAB 1
+            SpeedDialChild(
+              child: Icon(Icons.assignment_turned_in),
+              backgroundColor: Color(0xFF801E48),
+              onTap: () { /* do anything */ },
+              label: 'Button 1',
+              labelStyle: TextStyle(
+              fontWeight: FontWeight.w500,
+              color: Colors.white,
+              fontSize: 16.0),
+              labelBackgroundColor: Color(0xFF801E48)),
+                // FAB 2
+            SpeedDialChild(
+              child: Icon(Icons.assignment_turned_in),
+              backgroundColor: Color(0xFF801E48),
+              onTap: () {
+                 setState((){});
+              },
+              label: 'Button 2',
+              labelStyle: TextStyle(
+              fontWeight: FontWeight.w500,
+              color: Colors.white,
+                    fontSize: 16.0),
+                labelBackgroundColor: Color(0xFF801E48))
+          ],
+        );
+  }*/
+  
   @override
   Widget build(BuildContext context) {
     loadsessions();
@@ -138,7 +193,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         search = searchController.text;
                       });
                     },
-                    child: Text('검색', style: TextStyle(color: Colors.white)),
+                    child: Text('검색', style: TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold)),
                   ),
                 ],
               ),
@@ -148,15 +203,40 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           
           // floatingactionbutton 구현
-          floatingActionButton: FloatingActionButton(
-            onPressed: () {
-              Navigator.push(
-                context, MaterialPageRoute(builder:(context) => add_new(),)
-              );
-            },
-            backgroundColor: Color.fromARGB(200, 200,1, 80),
-            elevation: 15,
-            child: Icon(Icons.add),
+          floatingActionButton: Column(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              FloatingActionButton(
+                onPressed: () {
+                  filteredSessions = sessions;
+                  setState(() {
+                    // loadsessions();
+                    runFilter('전체');
+                    _changeButtonFontWeight(ButtonID.Button1);
+                    search = '';
+                    searchController.text = '';
+                    });
+                },
+                backgroundColor: Color.fromARGB(200, 200,1, 80),
+                elevation: 15,
+                child: Icon(Icons.refresh),
+                heroTag: null,
+              ),
+              SizedBox(
+                height: 12,
+              ),
+              FloatingActionButton(
+                onPressed: () {
+                  Navigator.push(
+                    context, MaterialPageRoute(builder:(context) => add_new(),)
+                  );
+                },
+                backgroundColor: Color.fromARGB(200, 200,1, 80),
+                elevation: 15,
+                child: Icon(Icons.add),
+                heroTag: null,
+              ),
+            ],
           ),
 
           body: 
@@ -340,44 +420,89 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 Container(
                   child: Divider(color: Color.fromARGB(200, 200,1, 80), thickness: 0.5,)),
-
-            if (sessions.isEmpty) 
-              ElevatedButton(child: Text('새로고침'), onPressed: (){setState(() {});},)
-            else 
-              Expanded(
-              child: ListView.builder(
-                // items 변수에 저장되어 있는 모든 값 출력
-                itemCount: filteredSessions.length,
-                itemBuilder: (BuildContext context, int index) {
-                  // 검색 기능, 검색어가 있을 경우
-                  if (search.isNotEmpty &&
-                      !filteredSessions[index]["name"].toString()
-                          .toLowerCase()
-                          .contains(search.toLowerCase())) {
-                    return SizedBox.shrink();
-                  }
-                  // 검색어가 없을 경우, 모든 항목 표시
-                  else {
-                    return Container(
-                      height: 90, width: 180,
-                      child: Card(
-                        elevation: 5,
-                        shape: RoundedRectangleBorder(
-                            side: BorderSide(color: Color.fromARGB(200, 200, 1, 80), width: 2,),
-                            borderRadius: BorderRadius.all(Radius.elliptical(20, 20))),
-                        child: ListTile(
-                          title: Text(filteredSessions[index]["name"], style:TextStyle(fontWeight: FontWeight.bold, fontSize: 22)),
-                          onTap: () => cardClickEvent(context, index),
-                          subtitle: Text('음식 종류: ${filteredSessions[index]['category'].toString()}'),
-                          trailing: Text('기타 정보'),
-                          //기타정보 표기를 위해서 ListTile이 아니라 다른 위젯을 고려해야 할 듯
+                if (sessions.isEmpty)
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        ElevatedButton(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              SizedBox(height: 5,),
+                              Text('세션 로드를 위해 새로고침하세요!',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  color: Color.fromARGB(199, 78, 78, 78),
+                                ),),
+                              SizedBox(height: 8,),
+                            ],
+                          ), 
+                        onPressed: (){},
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          alignment: Alignment.center,
+                          side: BorderSide(color: Color.fromARGB(199, 78, 78, 78), width: 1), // Background color
                         ),
                       ),
-                    );
-                  }
-                },
-              ),
-            )
+                      ]
+                    ),
+                  )
+                else if (filteredSessions.isEmpty || searching(search)) 
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                          Text('조건에 맞는 세션이 없습니다.',
+                            style: TextStyle(
+                            fontSize: 18,
+                            color: Color.fromARGB(199, 78, 78, 78),
+                            ),),
+                          SizedBox(height: 5,),
+                          Text('세션 추가 버튼을 눌러 세션을 추가하세요!',
+                            style: TextStyle(
+                            fontSize: 18,
+                            color: Color.fromARGB(199, 78, 78, 78),
+                          ),
+                        ),
+                      ]
+                    ),
+                  )
+                else 
+                  Expanded(
+                  child: ListView.builder(
+                    // items 변수에 저장되어 있는 모든 값 출력
+                    itemCount: filteredSessions.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      // 검색 기능, 검색어가 있을 경우
+                      if (search.isNotEmpty &&
+                          !filteredSessions[index]["name"].toString()
+                              .toLowerCase()
+                              .contains(search.toLowerCase())) {
+                        return SizedBox.shrink();
+                      }
+                      // 검색어가 없을 경우, 모든 항목 표시
+                      else {
+                        return Container(
+                          height: 90, width: 180,
+                          child: Card(
+                            elevation: 5,
+                            shape: RoundedRectangleBorder(
+                                side: BorderSide(color: Color.fromARGB(200, 200, 1, 80), width: 2,),
+                                borderRadius: BorderRadius.all(Radius.elliptical(20, 20))),
+                            child: ListTile(
+                              title: Text(filteredSessions[index]["name"], style:TextStyle(fontWeight: FontWeight.bold, fontSize: 22)),
+                              onTap: () => cardClickEvent(context, index),
+                              subtitle: Text('음식 종류: ${filteredSessions[index]['category'].toString()}'),
+                              trailing: Text('기타 정보'),
+                              //기타정보 표기를 위해서 ListTile이 아니라 다른 위젯을 고려해야 할 듯
+                            ),
+                          ),
+                        );
+                      }
+                    },
+                  ),
+                )
           ]
         )
       ),
