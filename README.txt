@@ -7,8 +7,3 @@
  - 세션 생성 (via new.dart / sessions.js / storedb)
   1. 가게 선택을 위한 storedb 생성 및 연결
   2. currentorder 변수 반영
-
-결론
- - 세션 생성 및 확인 기능 완전 구현 완료
- - 세션 세부 페이지 빠른 작업 요망
- - 세션 삭제 기능 작업 요망
