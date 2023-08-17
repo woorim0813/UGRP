@@ -2,9 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-List Menu = [];
-List menunum = [];
-
 class ContentPage extends StatefulWidget {
   final String name;
   final int currentorder;
@@ -17,6 +14,8 @@ class ContentPage extends StatefulWidget {
 }
 
 class ContentPageState extends State<ContentPage> {
+  List Menu = [];
+  List menunum = [];
   
   void loadmenu (String name) async {
     var reqbody = {

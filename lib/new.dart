@@ -37,6 +37,8 @@ class add_newState extends State<add_new> {
 
   @override
   Widget build(BuildContext context) {
+    store = [];
+    filteredstore =[];
     loadstore();
     return Scaffold(
       appBar: AppBar(
@@ -179,12 +181,22 @@ class add_new1State extends State<add_new1> {
           ),
           SizedBox(height: 30,),
           if (store.isEmpty) 
-            Center(
-              child: ElevatedButton(
-                child: Text('새로고침'), 
-                onPressed: (){setState(() {});},
-                )
+            Expanded(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ElevatedButton(
+                    child: Text('새로고침', style: TextStyle(color: Color.fromARGB(199, 78, 78, 78), fontSize: 17),), 
+                    onPressed: (){setState(() {});},
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      alignment: Alignment.center,
+                      side: BorderSide(color: Color.fromARGB(199, 78, 78, 78), width: 1),
+                    )
+                  ),
+                ],
               )
+            )
           else 
           Expanded(
               child: ListView.builder(
@@ -205,14 +217,21 @@ class add_new1State extends State<add_new1> {
                   // 검색어가 없을 경우, 모든 항목 표시
                   else {
                     return Container(
-                      height: 90, width: 180,
+                      height: 85, width: 180,
                       child: Card(
                         elevation: 5,
                         shape: RoundedRectangleBorder(
                           side: BorderSide(color: Color.fromARGB(200, 200, 1, 80), width: 2,),
                           borderRadius: BorderRadius.all(Radius.elliptical(20, 20))),
                         child: ListTile(
-                          title: Text(filteredstore[index]["name"], style:TextStyle(fontWeight: FontWeight.bold, fontSize: 22)),
+                          title: SizedBox(
+                            width: 240,
+                            child: Text(filteredstore[index]["name"], 
+                              style:TextStyle(fontWeight: FontWeight.bold, fontSize: 19),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            )
+                          ),
                           onTap: () {
                             selectedgage = filteredstore[index]["name"];
                             category = filteredstore[index]["category"];
@@ -225,8 +244,8 @@ class add_new1State extends State<add_new1> {
                               )
                             );
                           },
-                          subtitle: Text('음식 종류: ${filteredstore[index]['menu'].toString()}', maxLines: 1),
-                          trailing: Text('기타 정보'),
+                          subtitle: Text('대표 메뉴: ${filteredstore[index]['menu']}', maxLines: 1),
+                          trailing: Text('분류: ${filteredstore[index]['category']}'),
                         ),
                       ),
                     );
@@ -487,6 +506,7 @@ class add_new3 extends StatefulWidget {
 class add_new3State extends State<add_new3> {
 
   var menunum = List<int>.filled(Menu.length, 0);
+  List userorder = List.generate(Menu.length, (index) => ['', 0]);
 
   int calorder() {
     double currentorder = 0;
@@ -495,6 +515,25 @@ class add_new3State extends State<add_new3> {
     }
 
     return currentorder.round();
+  }
+
+  int calorder2() {
+    int a = 0;
+
+    for (int i =0; i < Menu.length; i++) {
+      if (menunum[i] == 0) {
+
+      }
+      else {
+        userorder[a][0] = Menu[i];
+        userorder[a][1] = menunum[i];
+        a++;
+      }
+    }
+
+    print(userorder);
+
+    return a;
   }
 
   @override
@@ -539,20 +578,33 @@ class add_new3State extends State<add_new3> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Row(
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          SizedBox(width: 12),
-                          Text(Menu[index]['menu'],
-                            style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold, color: Color.fromARGB(200, 200, 1, 80),),
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(10, 0, 0, 0),
+                            child: SizedBox(
+                              width: 240,
+                              child: Text(Menu[index]['menu'],
+                                style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold, color: Color.fromARGB(200, 200, 1, 80),),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
                           ),
-                          Text(' / ',
-                            style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold, color: Color.fromARGB(200, 200, 1, 80),),
-                          ),
-                          Text(Menu[index]['price'].toString(),
-                            style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold, color: Color.fromARGB(255, 75, 75, 75),),
-                          ),
-                          Text('원',
-                            style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold, color: Color.fromARGB(255, 75, 75, 75),),
+                          SizedBox(height: 5,),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.fromLTRB(12, 0, 0, 0),
+                                child: Text('${Menu[index]['price']} 원',
+                                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Color.fromARGB(255, 75, 75, 75),),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
@@ -609,11 +661,12 @@ class add_new3State extends State<add_new3> {
           ),
           onPressed: () {
             int cur = calorder();
+            int cal = calorder2();
             setState(() {
               Navigator.push(
                 context,
                 PageRouteBuilder(
-                  pageBuilder: (_, __, ___) => add_new4(cur, widget.finalorder, widget.finaltime, widget.location),
+                  pageBuilder: (_, __, ___) => add_new4(cur, widget.finalorder, widget.finaltime, widget.location, userorder, cal),
                   transitionDuration: const Duration(seconds: 0),
                   )
                 );
@@ -632,14 +685,17 @@ class add_new4 extends StatefulWidget {
   final int finalorder;
   final int finaltime;
   final String location;
+  final List userorder;
+  final int cal;
 
-  const add_new4(this.currentorder, this.finalorder, this.finaltime, this.location);
+  const add_new4(this.currentorder, this.finalorder, this.finaltime, this.location, this.userorder, this.cal);
 
   @override
   add_new4State createState() => add_new4State();
 }
 
 class add_new4State extends State<add_new4> {
+  
   void addsession () async{
     var reqbody = {
       "name": selectedgage,
@@ -660,54 +716,134 @@ class add_new4State extends State<add_new4> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(title: Text('주문 확인'),),
-        body: Column(
-          children: [
-            Align(
-              alignment: Alignment.topCenter,
-              child: Row(
-                children:[
-                      Container(
-                        height: 150,width: 150,
-                        decoration: BoxDecoration(border: Border.all(color: Colors.red)),
-                        child: Text('가게 사진'),
-                      ),
-                      Container(
-                        width: 150,height: 150,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-
-                          children:[
-                            Text('가게이름',style: TextStyle(letterSpacing: 5.0, fontSize: 20,fontWeight: FontWeight.bold),),
-                            Text('도로명 주소',style: TextStyle(letterSpacing: 5.0, fontSize:20,fontWeight: FontWeight.bold),),
-                            Text('메뉴와 수량',style: TextStyle(letterSpacing: 5.0, fontSize: 20,fontWeight: FontWeight.bold),),
-
-                          ]
-                        ),
-                      )
-                    ],
-                  ),
-            ),
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: SizedBox(
-                height: 30, width: double.infinity,
-                child:
-                ElevatedButton(
-                  child: Text('가격(w)'),
-                  onPressed: (){
-                    addsession();
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => Main()));
-                  },
-                ),
-              )
-            )
-
-          ]
-
+      appBar: AppBar(
+        title: Text("세션 추가 페이지"),
+        backgroundColor: Color.fromARGB(200, 200, 1, 80),
       ),
-      );
-  }
 
+      body: Column(
+        children: [
+          SizedBox(child: Center(child: Text('ShowStep 이미지 삽입')), height: 80,),
+          SizedBox(height: 30),
+
+          Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(left: 8.0),
+                child: Text('5. 주문 확인',
+                  style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold, color: Color.fromARGB(200, 200, 1, 80),),
+                ),
+              ),
+            ],
+          ),
+
+
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Container(
+                width: double.infinity, height: 200,decoration: BoxDecoration(border:  Border.fromBorderSide(BorderSide(color: Color.fromARGB(200, 200, 1, 80), width: 2.0),),),
+          
+                child:
+          
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('  ${selectedgage}', style: TextStyle( fontSize: 21,fontWeight: FontWeight.bold,color: Colors.black,),),
+                    // SizedBox(height: 5), // 원하는 너비 값으로 설정
+                    // Text('   메뉴명: ',style: TextStyle(letterSpacing: 5.0, fontSize:17,color: Colors.black,),),
+          
+                    // SizedBox(height: 10), // 원하는 너비 값으로 설정
+                    Row(
+                      children: [
+                        SizedBox(width: 5), //  간격
+                        Icon(Icons.monetization_on_outlined,color: Color.fromARGB(200, 200, 1, 80),), // 아이콘
+                        Text(' 최소주문가격: ${widget.finalorder} 원',style: TextStyle( fontSize: 17,color: Color.fromARGB(200, 200, 1, 80),),),
+                        //Text( widget.finalorder.toString(),style: TextStyle(letterSpacing: 5.0, fontSize: 17,color: Colors.grey),),
+                      ],
+                    ),
+          
+                    Row(
+                      children: [
+                        SizedBox(width: 5), //  간격
+          
+                        Icon(Icons.timer_outlined,color: Color.fromARGB(200, 200, 1, 80),), // 아이콘
+                        Text(' 주문대기시간(max): ${widget.finaltime} 분',style: TextStyle( fontSize: 17,color: Color.fromARGB(200, 200, 1, 80),),),
+                        //Text( widget.finaltime.toString() ,style: TextStyle(letterSpacing: 5.0, fontSize: 17,color: Colors.grey),),
+                      ],
+                    ),
+          
+                    Row(
+                      children: [
+                        SizedBox(width: 5), //  간격
+                        Icon(Icons.place,color: Color.fromARGB(200, 200, 1, 80),), // 아이콘
+                        Text(' 배달스팟: ${widget.location}',style: TextStyle( fontSize: 17,color: Color.fromARGB(200, 200, 1, 80),),),
+                        //Text( widget.location,style: TextStyle(letterSpacing: 5.0, fontSize: 17,color: Colors.grey),),
+                      ],
+                    ),
+          
+          
+                  ],
+                )
+          
+          
+            ),
+          ),
+
+          Expanded( // 
+            child: ListView.builder(
+              itemCount: widget.cal,
+              itemBuilder: (BuildContext context, int index) {
+                return Container(
+                  width: double.infinity, height: 110,
+                  child: Card(
+                    elevation: 0,
+                    //shape: RoundedRectangleBorder(
+                    //    side: BorderSide(color: Color.fromARGB(200, 200, 1, 80), width: 2,),
+                    //    borderRadius: BorderRadius.all(Radius.elliptical(20, 20))),
+          
+                    child: Padding(
+                      padding: const EdgeInsets.all(5.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          SizedBox(height: 2),
+                          Text('  - ${widget.userorder[index][0]["menu"]}',style: TextStyle(fontSize: 20,fontWeight: FontWeight.bold, ),),
+                          // SizedBox(height: 5), // 원하는 너비 값으로 설정
+                          SizedBox(height: 4), // 원하는 너비 값으로 설정
+                          Text('   수량:      ${widget.userorder[index][1]} 개',style: TextStyle(letterSpacing: 5.0, fontSize: 15,color: Colors.grey),),
+                          Text('   메뉴가격:  ${widget.userorder[index][0]["price"]*widget.userorder[index][1]} 원(₩)',style: TextStyle(letterSpacing: 5.0, fontSize: 15,color: Colors.grey),),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              }
+            ),
+          ),
+        ]
+      ),
+
+      bottomNavigationBar: BottomAppBar(
+          child:
+          SizedBox(
+            height: 60, // 원하는 높이 값으로 설정
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Color.fromARGB(200, 200, 1, 80), // 원하는 배경색을 여기에 설정
+                foregroundColor: Colors.white,
+                elevation: 0,
+              ),
+              onPressed: () {
+                addsession();
+                Navigator.push(context, MaterialPageRoute(builder: (context) => Main()));
+              },
+              child: Text('결제: ${widget.currentorder.toString()} (₩)'),
+            ),
+          )
+      ),
+    );
+  }
 }

@@ -39,7 +39,7 @@ class _MainState extends State<Main> {
             ),
           BottomNavigationBarItem(
             icon: Icon(Icons.abc_outlined),
-            label: '추가 요망', 
+            label: '나의 세션', 
             ),
           BottomNavigationBarItem(
             icon: Icon(Icons.add),
