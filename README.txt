@@ -12,3 +12,16 @@
  - 세션 생성 (via sessions.js)
   1. create_time 변수 반영
   2. finaltime 변수 활용 세션 삭제 기능 구현
+
+1.1.2a (8월 17일)
+ - 세션 삭제 (via sessions.js)
+  1. create_time 변수 활용 세션 삭제 기능 구현
+  2. 디버깅 성능 이슈로 주석 처리 필요
+ - 세션 생성 (via new.dart)
+  1. add_new4 초안 완성
+ - 신규 DB (via home.dart / new.dart/ storedb / menudb)
+  1. 긴 텍스트 대응 예외 처리
+
+1.1.2b
+ - 세션 세부 페이지 완성 예정
+ - 이미지 추가 예정
