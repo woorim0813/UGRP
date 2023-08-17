@@ -17,7 +17,7 @@ router.post('/load', (req, res) => {
      
     connection.query('SELECT * FROM session', (error, results, field) => {
         if (error) throw error;
-        console.log(userid);
+        // console.log(userid);
         console.log(results);
         res.json(results);
       });
@@ -71,15 +71,15 @@ router.post('/storeload', (req, res) => {
   
   //20230827 11:48 수정 - 김정우 PART
   //기능4. 세션 삭제(자동!)
-var del_timer = setInterval(del_session, 1000); //1초마다 실행 -> 1분 단위로 수정하는게 좋을 듯
-  
+// var del_timer = setInterval(del_session, 1000); //1초마다 실행 -> 1분 단위로 수정하는게 좋을 듯
+/*  
 function del_session() {
   connection.query('DELETE FROM session WHERE NOW() = DATE_ADD(create_time, INTERVAL finaltime MINUTE)', 
     (error, results, field) => {
       if (error) throw error;
   });
 }
-  
+*/
 //기능5. 주문(세션 참여)페이지에 쓰일 음식 및 가격 정보 제공
 //dinerDB - {name(음식점), food(음식), price(가격), photo(음식사진)} 정보가 있는 DB
 router.post('/orderload', (req, res) => {
