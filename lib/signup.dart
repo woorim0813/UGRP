@@ -64,7 +64,7 @@ class _SignupPageState extends State<SignupPage> {
       };
 
       var response = await http.post(
-        Uri.parse("http://192.168.123.128:3000/signup"),
+        Uri.parse("http://192.168.123.182:3000/signup"),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode(reqbody)
       );

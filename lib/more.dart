@@ -14,7 +14,7 @@ class MoreScreen extends StatelessWidget {
         child: Column(children: [
           ElevatedButton(
             onPressed: () {},
-            child: Text(context.watch<UserProvider>().userid),
+            child: Text('${context.watch<UserProvider>().userid} ${context.watch<UserProvider>().insession}'),
             ),
           ],)
         )

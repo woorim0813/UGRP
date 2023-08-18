@@ -1,17 +1,18 @@
+import 'package:color_example/home.dart';
 import 'package:color_example/realhome.dart';
 import 'package:flutter/material.dart';
 import 'package:remedi_kopo/remedi_kopo.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'provider.dart';
+import 'package:provider/provider.dart';
 
 
 String selectedgage ='';
 String category = '';
 List Menu = [];
 
-List store = [];
-List filteredstore = [];
-
+String userid = '';
 
 class add_new extends StatefulWidget {
   const add_new({Key? key}):super(key: key);
@@ -20,7 +21,7 @@ class add_new extends StatefulWidget {
 }
 
 class add_newState extends State<add_new> {
-  void loadstore () async {
+  /*void loadstore () async {
     var reqbody = {
     };
 
@@ -33,13 +34,14 @@ class add_newState extends State<add_new> {
     List jsonResponse = json.decode(response.body);
     store = jsonResponse;
     filteredstore = store;
-  }
+  }*/
 
   @override
   Widget build(BuildContext context) {
-    store = [];
-    filteredstore =[];
-    loadstore();
+    userid = context.watch<UserProvider>().userid;
+    //store = [];
+    //filteredstore =[];
+    //loadstore();
     return Scaffold(
       appBar: AppBar(
         title: Text("세션 추가 페이지"),
@@ -58,9 +60,26 @@ class add_new1 extends StatefulWidget {
 }
 
 class add_new1State extends State<add_new1> {
+  List store = [];
+  List filteredstore = [];
   
   TextEditingController searchController = TextEditingController();
   String search = '';
+  
+  void loadstore () async {
+    var reqbody = {
+    };
+
+    var response = await http.post(
+      Uri.parse("http://192.168.123.182:3000/sessions/storeload"),
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode(reqbody)
+    );
+
+    List jsonResponse = json.decode(response.body);
+    store = jsonResponse;
+    filteredstore = store;
+  }
 
   void runFilter(String Keyword) {
     List results = [];
@@ -187,7 +206,7 @@ class add_new1State extends State<add_new1> {
                 children: [
                   ElevatedButton(
                     child: Text('새로고침', style: TextStyle(color: Color.fromARGB(199, 78, 78, 78), fontSize: 17),), 
-                    onPressed: (){setState(() {});},
+                    onPressed: (){setState(() {loadstore();});},
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
                       alignment: Alignment.center,
@@ -306,188 +325,190 @@ class add_new2State extends State<add_new2> {
         title: Text("세션 추가 페이지"),
         backgroundColor: Color.fromARGB(200, 200, 1, 80),
       ),
-      body: Column(children: [
-        SizedBox(child: Center(child: Text('ShowStep 이미지 삽입')), height: 80,),
-
-        SizedBox(height: 30),
-
-        Container(
-          alignment: Alignment.centerLeft,
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text('1. 배달 받을 위치 설정',
-              style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold, color: Color.fromARGB(200, 200, 1, 80),),
-            ),
-          )
-        ),
-
-        Container(
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                Text(address, style: TextStyle(color: Color.fromARGB(255, 44, 44, 44), fontSize: 17)),
-                
-                ElevatedButton(
-                    child: Text('주소 검색', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: const Color.fromARGB(255, 75, 75, 75),)),
-                    
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      alignment: Alignment.centerRight, 
-                      
-                      ),
-                    onPressed: () async {
-                      KopoModel model = await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => RemediKopo(),
-                        ),
-                        // 주소 설정 안하고 뒤로 오는 경우 예외처리 필요
-                      );
-                      setState(() {
-                        address = '${model.address}';
-                        sangse = true;
-                        detailaddresshint = '상세 주소를 입력하세요';
-                    });
-                    },
-                  
-                ),
-              ],
-              
-            ),
+      body: SingleChildScrollView(
+        child: Column(children: [
+          SizedBox(child: Center(child: Text('ShowStep 이미지 삽입')), height: 80,),
+      
+          SizedBox(height: 30),
+      
+          Container(
+            alignment: Alignment.centerLeft,
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text('1. 배달 받을 위치 설정',
+                style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold, color: Color.fromARGB(200, 200, 1, 80),),
+              ),
+            )
           ),
-        ),
-
-        Container(
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: TextField(
-              controller: detailaddress,
-              decoration: InputDecoration(
-                hintText: detailaddresshint,
-                enabled: sangse,
+      
+          Container(
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                  Text(address, style: TextStyle(color: Color.fromARGB(255, 44, 44, 44), fontSize: 17)),
+                  
+                  ElevatedButton(
+                      child: Text('주소 검색', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: const Color.fromARGB(255, 75, 75, 75),)),
+                      
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        alignment: Alignment.centerRight, 
+                        
+                        ),
+                      onPressed: () async {
+                        KopoModel model = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => RemediKopo(),
+                          ),
+                          // 주소 설정 안하고 뒤로 오는 경우 예외처리 필요
+                        );
+                        setState(() {
+                          address = '${model.address}';
+                          sangse = true;
+                          detailaddresshint = '상세 주소를 입력하세요';
+                      });
+                      },
+                    
+                  ),
+                ],
+                
               ),
             ),
           ),
-        ),
-
-        Container(
-          child: Divider(color: Color.fromARGB(200, 200,1, 80), thickness: 0.5,)
-        ),
-
-        Container(
-          alignment: Alignment.centerLeft,
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('2. 최소 주문 가격 설정',
-                  style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold, color: Color.fromARGB(200, 200, 1, 80),),
+      
+          Container(
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: TextField(
+                controller: detailaddress,
+                decoration: InputDecoration(
+                  hintText: detailaddresshint,
+                  enabled: sangse,
                 ),
-                Text('${_sliderController.sliderValue.round()} 원    ',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: const Color.fromARGB(255, 75, 75, 75),)
-                )
-              ],
+              ),
             ),
-          )
-        ),
-
-        SizedBox(height: 20,),
-
-        SliderTheme(
-          data: SliderThemeData(
-            showValueIndicator: ShowValueIndicator.always,
-            activeTrackColor: Color.fromARGB(220, 200, 1, 80),
-            inactiveTrackColor: Color.fromARGB(50, 200, 1, 80),
-            inactiveTickMarkColor: Colors.white,
-            thumbColor: Color.fromARGB(200, 200, 1, 80),
           ),
-          child: Slider(
-            value: _sliderController.sliderValue,
-            min: 10000,
-            max: 30000,
-            label: '${_sliderController.sliderValue.round()} 원',
-            divisions: 20,
-            onChanged: (double newValue) {
-                setState(() {
-                  _sliderController.sliderValue = newValue;
-                },);
-              },
-          )
-        ),
-        
-        Container(
-          child: Divider(color: Color.fromARGB(200, 200,1, 80), thickness: 0.5,)
-        ),
-
-        Container(
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('3. 주문 대기 시간 설정',
-                  style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold, color: Color.fromARGB(200, 200, 1, 80),),
-                ),
-                Text('${_sliderController2.sliderValue.round()} 분    ',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color.fromARGB(255, 75, 75, 75),)
-                )
-              ],
-            ),
-          )
-        ),
-
-        SizedBox(height: 20,),
-
-        SliderTheme(
-          data: SliderThemeData(
-            showValueIndicator: ShowValueIndicator.always,
-            activeTrackColor: Color.fromARGB(220, 200, 1, 80),
-            inactiveTrackColor: Color.fromARGB(50, 200, 1, 80),
-            inactiveTickMarkColor: Colors.white,
-            thumbColor: Color.fromARGB(200, 200, 1, 80),
+      
+          Container(
+            child: Divider(color: Color.fromARGB(200, 200,1, 80), thickness: 0.5,)
           ),
-          child: Slider(
-            value: _sliderController2.sliderValue,
-            min: 5,
-            max: 30,
-            label: '${_sliderController2.sliderValue.round()} 분',
-            divisions: 6,
-            onChanged: (double newValue) {
-                setState(() {
-                  _sliderController2.sliderValue = newValue;
-                },);
-              },
-          )
-        ),
-
-        Container(
-          child: Divider(color: Color.fromARGB(200, 200,1, 80), thickness: 0.5,)
-        ),
-        SizedBox(height: 10,),
-
-        ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            padding: EdgeInsets.zero,
-            backgroundColor: Color.fromARGB(200, 200, 1, 80)
-          ),
-          onPressed: () { // sangse 이용한 enable 필요
-            setState(() {
-              detailaddressstring = detailaddress.text.toString();
-              fulladdress = address + ' ' + detailaddressstring;
-              Navigator.push(
-                context,
-                PageRouteBuilder(
-                  pageBuilder: (_, __, ___) => add_new3(_sliderController.sliderValue.round(), _sliderController2.sliderValue.round(), fulladdress),
-                  transitionDuration: const Duration(seconds: 0),
+      
+          Container(
+            alignment: Alignment.centerLeft,
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('2. 최소 주문 가격 설정',
+                    style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold, color: Color.fromARGB(200, 200, 1, 80),),
+                  ),
+                  Text('${_sliderController.sliderValue.round()} 원    ',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: const Color.fromARGB(255, 75, 75, 75),)
                   )
-                );
-            });
-        }, child: Text('다음', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)))
-      ],)
+                ],
+              ),
+            )
+          ),
+      
+          SizedBox(height: 20,),
+      
+          SliderTheme(
+            data: SliderThemeData(
+              showValueIndicator: ShowValueIndicator.always,
+              activeTrackColor: Color.fromARGB(220, 200, 1, 80),
+              inactiveTrackColor: Color.fromARGB(50, 200, 1, 80),
+              inactiveTickMarkColor: Colors.white,
+              thumbColor: Color.fromARGB(200, 200, 1, 80),
+            ),
+            child: Slider(
+              value: _sliderController.sliderValue,
+              min: 10000,
+              max: 30000,
+              label: '${_sliderController.sliderValue.round()} 원',
+              divisions: 20,
+              onChanged: (double newValue) {
+                  setState(() {
+                    _sliderController.sliderValue = newValue;
+                  },);
+                },
+            )
+          ),
+          
+          Container(
+            child: Divider(color: Color.fromARGB(200, 200,1, 80), thickness: 0.5,)
+          ),
+      
+          Container(
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('3. 주문 대기 시간 설정',
+                    style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold, color: Color.fromARGB(200, 200, 1, 80),),
+                  ),
+                  Text('${_sliderController2.sliderValue.round()} 분    ',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color.fromARGB(255, 75, 75, 75),)
+                  )
+                ],
+              ),
+            )
+          ),
+      
+          SizedBox(height: 20,),
+      
+          SliderTheme(
+            data: SliderThemeData(
+              showValueIndicator: ShowValueIndicator.always,
+              activeTrackColor: Color.fromARGB(220, 200, 1, 80),
+              inactiveTrackColor: Color.fromARGB(50, 200, 1, 80),
+              inactiveTickMarkColor: Colors.white,
+              thumbColor: Color.fromARGB(200, 200, 1, 80),
+            ),
+            child: Slider(
+              value: _sliderController2.sliderValue,
+              min: 5,
+              max: 30,
+              label: '${_sliderController2.sliderValue.round()} 분',
+              divisions: 6,
+              onChanged: (double newValue) {
+                  setState(() {
+                    _sliderController2.sliderValue = newValue;
+                  },);
+                },
+            )
+          ),
+      
+          Container(
+            child: Divider(color: Color.fromARGB(200, 200,1, 80), thickness: 0.5,)
+          ),
+          SizedBox(height: 10,),
+      
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              padding: EdgeInsets.zero,
+              backgroundColor: Color.fromARGB(200, 200, 1, 80)
+            ),
+            onPressed: () { // sangse 이용한 enable 필요
+              setState(() {
+                detailaddressstring = detailaddress.text.toString();
+                fulladdress = address + ' ' + detailaddressstring;
+                Navigator.push(
+                  context,
+                  PageRouteBuilder(
+                    pageBuilder: (_, __, ___) => add_new3(_sliderController.sliderValue.round(), _sliderController2.sliderValue.round(), fulladdress),
+                    transitionDuration: const Duration(seconds: 0),
+                    )
+                  );
+              });
+          }, child: Text('다음', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)))
+        ],),
+      )
     );
   }
 }
@@ -506,7 +527,7 @@ class add_new3 extends StatefulWidget {
 class add_new3State extends State<add_new3> {
 
   var menunum = List<int>.filled(Menu.length, 0);
-  List userorder = List.generate(Menu.length, (index) => ['', 0]);
+  List userorder = [];
 
   int calorder() {
     double currentorder = 0;
@@ -519,14 +540,19 @@ class add_new3State extends State<add_new3> {
 
   int calorder2() {
     int a = 0;
+    List temp = [];
 
     for (int i =0; i < Menu.length; i++) {
+      temp = [];
       if (menunum[i] == 0) {
 
       }
       else {
-        userorder[a][0] = Menu[i];
-        userorder[a][1] = menunum[i];
+        temp.add(Menu[i]);
+        temp.add(menunum[i]); 
+        
+        userorder.addAll(temp);
+
         a++;
       }
     }
@@ -618,7 +644,10 @@ class add_new3State extends State<add_new3> {
                               backgroundColor: Color.fromARGB(200, 200, 1, 80)
                             ),
                             onPressed: () {
-                              setState(() {menunum[index]++;});
+                              if(menunum[index] == 9){}
+                              else{
+                                setState(() {menunum[index]++;});
+                              }
                             },
                             child: Icon(Icons.add)),
                         ),
@@ -698,6 +727,8 @@ class add_new4State extends State<add_new4> {
   
   void addsession () async{
     var reqbody = {
+      "userid": userid,
+      "userorder": jsonEncode(widget.userorder),
       "name": selectedgage,
       "category": category,
       "currentorder": widget.currentorder,
@@ -742,7 +773,7 @@ class add_new4State extends State<add_new4> {
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Container(
-                width: double.infinity, height: 200,decoration: BoxDecoration(border:  Border.fromBorderSide(BorderSide(color: Color.fromARGB(200, 200, 1, 80), width: 2.0),),),
+                width: double.infinity, height: 230,decoration: BoxDecoration(border:  Border.fromBorderSide(BorderSide(color: Color.fromARGB(200, 200, 1, 80), width: 2.0),),),
           
                 child:
           
@@ -751,10 +782,7 @@ class add_new4State extends State<add_new4> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text('  ${selectedgage}', style: TextStyle( fontSize: 21,fontWeight: FontWeight.bold,color: Colors.black,),),
-                    // SizedBox(height: 5), // 원하는 너비 값으로 설정
-                    // Text('   메뉴명: ',style: TextStyle(letterSpacing: 5.0, fontSize:17,color: Colors.black,),),
-          
-                    // SizedBox(height: 10), // 원하는 너비 값으로 설정
+                    
                     Row(
                       children: [
                         SizedBox(width: 5), //  간격
@@ -769,20 +797,46 @@ class add_new4State extends State<add_new4> {
                         SizedBox(width: 5), //  간격
           
                         Icon(Icons.timer_outlined,color: Color.fromARGB(200, 200, 1, 80),), // 아이콘
-                        Text(' 주문대기시간(max): ${widget.finaltime} 분',style: TextStyle( fontSize: 17,color: Color.fromARGB(200, 200, 1, 80),),),
+                        Text(' 주문대기시간: ${widget.finaltime} 분',style: TextStyle( fontSize: 17,color: Color.fromARGB(200, 200, 1, 80),),),
                         //Text( widget.finaltime.toString() ,style: TextStyle(letterSpacing: 5.0, fontSize: 17,color: Colors.grey),),
                       ],
                     ),
           
-                    Row(
+                    Column(
                       children: [
-                        SizedBox(width: 5), //  간격
-                        Icon(Icons.place,color: Color.fromARGB(200, 200, 1, 80),), // 아이콘
-                        Text(' 배달스팟: ${widget.location}',style: TextStyle( fontSize: 17,color: Color.fromARGB(200, 200, 1, 80),),),
-                        //Text( widget.location,style: TextStyle(letterSpacing: 5.0, fontSize: 17,color: Colors.grey),),
+                        Row(
+                          children: [
+                            SizedBox(width: 5), //  간격
+                            Icon(Icons.place,color: Color.fromARGB(200, 200, 1, 80),),
+                            Text(' 배달스팟 ',
+                                    style: TextStyle(
+                                      fontSize: 17,
+                                      color: Color.fromARGB(200, 200, 1, 80),
+                                      ),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis
+                                    ), // 아이콘
+                          ],
+                        ),
+                        SizedBox(height: 5,),
+                        Row(
+                          children: [
+                            SizedBox(width: 32),
+                            SizedBox(
+                                  width: 350,
+                                  child: Text('${widget.location}',
+                                    style: TextStyle(
+                                      fontSize: 17,
+                                      color: Color.fromARGB(200, 200, 1, 80),
+                                      ),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis
+                                    ),
+                                ),
+                          ],
+                        ),
                       ],
                     ),
-          
           
                   ],
                 )
@@ -810,11 +864,11 @@ class add_new4State extends State<add_new4> {
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           SizedBox(height: 2),
-                          Text('  - ${widget.userorder[index][0]["menu"]}',style: TextStyle(fontSize: 20,fontWeight: FontWeight.bold, ),),
+                          Text('  - ${widget.userorder[2*index]["menu"]}',style: TextStyle(fontSize: 20,fontWeight: FontWeight.bold, ),),
                           // SizedBox(height: 5), // 원하는 너비 값으로 설정
                           SizedBox(height: 4), // 원하는 너비 값으로 설정
-                          Text('   수량:      ${widget.userorder[index][1]} 개',style: TextStyle(letterSpacing: 5.0, fontSize: 15,color: Colors.grey),),
-                          Text('   메뉴가격:  ${widget.userorder[index][0]["price"]*widget.userorder[index][1]} 원(₩)',style: TextStyle(letterSpacing: 5.0, fontSize: 15,color: Colors.grey),),
+                          Text('   수량:      ${widget.userorder[2*index + 1]} 개',style: TextStyle(letterSpacing: 5.0, fontSize: 15,color: Colors.grey),),
+                          Text('   메뉴가격:  ${widget.userorder[2*index]["price"]*widget.userorder[2*index + 1]} 원(₩)',style: TextStyle(letterSpacing: 5.0, fontSize: 15,color: Colors.grey),),
                         ],
                       ),
                     ),
@@ -838,7 +892,10 @@ class add_new4State extends State<add_new4> {
               ),
               onPressed: () {
                 addsession();
-                Navigator.push(context, MaterialPageRoute(builder: (context) => Main()));
+                context.read<UserProvider>().inupdate(userid);
+                setState(() {
+                  Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => Main()), (route) => false);
+                });
               },
               child: Text('결제: ${widget.currentorder.toString()} (₩)'),
             ),

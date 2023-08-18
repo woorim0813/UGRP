@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'home.dart';
 import 'more.dart';
 import 'add.dart';
+import 'provider.dart';
+import 'package:provider/provider.dart';
 
 class Main extends StatefulWidget{
   @override
@@ -26,6 +28,7 @@ class _MainState extends State<Main> {
   }
 
   Widget build(BuildContext context) {
+    context.read<UserProvider>().inupdate(userid);
     return Scaffold(
       body: pages[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(

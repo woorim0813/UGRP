@@ -74,8 +74,8 @@ class _LoginPageState extends State<LoginPage> {
       var jsonResponse = json.decode(json.encode(response.body));
 
       if (jsonResponse == 'true') {
-        Navigator.push(
-          context, MaterialPageRoute(builder:(context) => Main()));
+        Navigator.pushAndRemoveUntil(
+          context, MaterialPageRoute(builder:(context) => Main()), (route) => false);
       }
       else{
         PopUp();
@@ -148,6 +148,7 @@ class _LoginPageState extends State<LoginPage> {
                             onPressed: () {
                               login(userid.text, password.text);
                               context.read<UserProvider>().idupdate(userid.text);
+                              context.read<UserProvider>().inupdate(userid.text);
                             },
                             style: ButtonStyle(
                               backgroundColor: MaterialStateColor.resolveWith((states) => Color.fromARGB(200, 200,1, 80)),
