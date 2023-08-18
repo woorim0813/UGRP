@@ -17,15 +17,57 @@ router.post('/load', (req, res) => {
      
     connection.query('SELECT * FROM session', (error, results, field) => {
         if (error) throw error;
-        // console.log(userid);
-        console.log(results);
         res.json(results);
-      });
-  });
+      }
+    );
+  }
+);
+
+router.post('/check', (req, res) => {
+    const userid = req.body["userid"];
+
+    connection.query('SELECT * FROM memberdb WHERE userid = ?', [userid], 
+      (error, results, field) => {
+        if (error) {throw error;}
+        else if (results.length > 0) {res.send(true);}
+        else {res.send(false);}
+      }
+    )
+  }
+)
+
+router.post('/addmember', (req, res) => {
+  var userid = req.body["userid"];
+  var sessionid = req.body["sessionid"];
+  var currentorder = req.body["currentorder"];
+  var userorder = req.body["userorder"];
+
+  var update = 0;
+
+  connection.query('SELECT currentorder FROM session WHERE id = ?', [sessionid],
+    (error, results, field) => {
+      if (error) {throw error;}
+      update = currentorder + results[0]["currentorder"];
+
+      connection.query('UPDATE session SET currentorder = ? WHERE id = ?', [update, sessionid],
+      (error, results, field) => {
+        if (error) {throw error;}
+
+        connection.query(
+          'INSERT INTO memberdb (userid, sessionid, userorder) VALUES (?, ?, ?)',
+          [userid, sessionid, userorder],
+          (error, results, field) => {
+            if (error) throw error
+            res.json(true);
+          }
+        );
+      }
+    )
+    }
+  )
+})
 
 router.post('/add', (req, res) => {
-    // let create_time = today().toLocaleTimeString();
-
     var today = new Date();
 
     var year = today.getFullYear();
@@ -42,6 +84,8 @@ router.post('/add', (req, res) => {
 
     var create_time = dateString + ' ' + timeString;
 
+    var userid = req.body["userid"];
+    var userorder = req.body["userorder"];
     var name = req.body["name"];
     var category = req.body["category"];
     var currentorder = req.body["currentorder"];
@@ -49,14 +93,29 @@ router.post('/add', (req, res) => {
     var finaltime = req.body["finaltime"];
     var location = req.body["location"];
 
-    connection.query(
+    var currentid;
+
+    const insert = connection.query(
         'INSERT INTO session (create_time, name, category, currentorder, finalorder, finaltime, location) VALUES (?, ?, ?, ?, ?, ?, ?)',
         [create_time, name, category, currentorder, finalorder, finaltime, location], 
         (error, results, field) => {
         if (error) throw error
-        else res.json(true)
+        else {
+          currentid = results.insertId;
+          console.log(currentid);
+          
+          connection.query(
+            'INSERT INTO memberdb (userid, sessionid, userorder) VALUES (?, ?, ?)',
+            [userid, currentid, userorder],
+            (error, results, field) => {
+              if (error) throw error
+              res.json(true);
+            }
+          );
+        }
       }
     );
+    
 });
 
 router.post('/storeload', (req, res) => {
@@ -80,8 +139,9 @@ function del_session() {
   });
 }
 */
+
 //기능5. 주문(세션 참여)페이지에 쓰일 음식 및 가격 정보 제공
-//dinerDB - {name(음식점), food(음식), price(가격), photo(음식사진)} 정보가 있는 DB
+
 router.post('/orderload', (req, res) => {
     var name = req.body['name'];
     
@@ -89,7 +149,6 @@ router.post('/orderload', (req, res) => {
       'SELECT menu, price FROM menudb WHERE name=?', [name], 
       (error, results, field) => {
       if (error) throw error;
-      console.log(results);
       res.json(results);
     });
   });
