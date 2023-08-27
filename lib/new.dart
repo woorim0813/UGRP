@@ -1,4 +1,4 @@
-import 'package:color_example/home.dart';
+// import 'package:color_example/home.dart';
 import 'package:color_example/realhome.dart';
 import 'package:flutter/material.dart';
 import 'package:remedi_kopo/remedi_kopo.dart';
@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'provider.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 
 String selectedgage ='';
@@ -21,27 +22,10 @@ class add_new extends StatefulWidget {
 }
 
 class add_newState extends State<add_new> {
-  /*void loadstore () async {
-    var reqbody = {
-    };
-
-    var response = await http.post(
-      Uri.parse("http://192.168.123.182:3000/sessions/storeload"),
-      headers: {"Content-Type": "application/json"},
-      body: jsonEncode(reqbody)
-    );
-
-    List jsonResponse = json.decode(response.body);
-    store = jsonResponse;
-    filteredstore = store;
-  }*/
 
   @override
   Widget build(BuildContext context) {
     userid = context.watch<UserProvider>().userid;
-    //store = [];
-    //filteredstore =[];
-    //loadstore();
     return Scaffold(
       appBar: AppBar(
         title: Text("세션 추가 페이지"),
@@ -66,7 +50,7 @@ class add_new1State extends State<add_new1> {
   TextEditingController searchController = TextEditingController();
   String search = '';
   
-  void loadstore () async {
+  Future<List> loadstore () async {
     var reqbody = {
     };
 
@@ -77,8 +61,8 @@ class add_new1State extends State<add_new1> {
     );
 
     List jsonResponse = json.decode(response.body);
-    store = jsonResponse;
-    filteredstore = store;
+    
+    return jsonResponse;
   }
 
   void runFilter(String Keyword) {
@@ -97,6 +81,7 @@ class add_new1State extends State<add_new1> {
       filteredstore = results;
     });
   }
+  
   String DropdownValue = '전체';
 
   void loadmenu (String name) async {
@@ -112,6 +97,19 @@ class add_new1State extends State<add_new1> {
 
     List<dynamic> jsonResponse = json.decode(response.body);
     Menu = jsonResponse;
+  }
+
+  void waitforstores() async {
+    store = await loadstore();
+    filteredstore = store;
+    setState(() {});
+  }
+  
+  @override
+  void initState() {
+    super.initState();
+
+    waitforstores();
   }
 
   @override
@@ -165,9 +163,7 @@ class add_new1State extends State<add_new1> {
                 ),
               ),
               SizedBox(width: 8,),
-              Container(
-                width: 270,
-                height: 50,
+              Expanded(
                 child: Center(
                   child: TextField(
                     controller: searchController,
@@ -201,20 +197,13 @@ class add_new1State extends State<add_new1> {
           SizedBox(height: 30,),
           if (store.isEmpty) 
             Expanded(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  ElevatedButton(
-                    child: Text('새로고침', style: TextStyle(color: Color.fromARGB(199, 78, 78, 78), fontSize: 17),), 
-                    onPressed: (){setState(() {loadstore();});},
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      alignment: Alignment.center,
-                      side: BorderSide(color: Color.fromARGB(199, 78, 78, 78), width: 1),
-                    )
-                  ),
-                ],
-              )
+              child: Center(
+                child: SpinKitFadingCircle( // FadingCube 모양 사용
+                  color: Color.fromARGB(200, 200, 1, 80), // 색상 설정
+                  size: 50.0, // 크기 설정
+                  duration: Duration(seconds: 2), //속도 설정 
+        ),
+      ),
             )
           else 
           Expanded(
@@ -300,26 +289,8 @@ class add_new2State extends State<add_new2> {
   Widget currentpage = add_new();
   bool sangse = false;
 
-  void loadmenu (String name) async {
-    var reqbody = {
-      "name": name,
-    };
-
-    var response = await http.post(
-      Uri.parse("http://192.168.123.182:3000/sessions/orderload"),
-      headers: {"Content-Type": "application/json"},
-      body: jsonEncode(reqbody)
-    );
-
-    List<dynamic> jsonResponse = json.decode(response.body);
-    Menu = jsonResponse;
-  }
-
-
-
   @override
   Widget build(BuildContext context){
-    //loadmenu(selectedgage);
     return Scaffold(
       appBar: AppBar(
         title: Text("세션 추가 페이지"),
@@ -569,141 +540,144 @@ class add_new3State extends State<add_new3> {
         title: Text("세션 추가 페이지"),
         backgroundColor: Color.fromARGB(200, 200, 1, 80),
       ),
-      body: Column(children: [
-        SizedBox(child: Center(child: Text('ShowStep 이미지 삽입')), height: 80,),
-
-        SizedBox(height: 30),
-
-        Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(left: 8.0),
-              child: Text('4. 개인 메뉴 선택',
-                style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold, color: Color.fromARGB(200, 200, 1, 80),),
+      body: SingleChildScrollView(
+        child: Column(children: [
+          SizedBox(child: Center(child: Text('ShowStep 이미지 삽입')), height: 80,),
+      
+          SizedBox(height: 30),
+      
+          Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(left: 8.0),
+                child: Text('4. 개인 메뉴 선택',
+                  style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold, color: Color.fromARGB(200, 200, 1, 80),),
+                ),
               ),
-            ),
-          ],
-        ),
-
-        SizedBox(height: 10),
-
-        Container(
-          padding: EdgeInsets.only(left: 8, right: 8),
-          height: 500,
-          child: ListView.builder(
-            itemCount: Menu.length,
-            itemBuilder: (BuildContext context, int index) {
-            return  Container(
-                height: 90, width: 180,
-                child: Card(
-                  elevation: 5,
-                  shape: RoundedRectangleBorder(
-                    side: BorderSide(color: Color.fromARGB(200, 200, 1, 80), width: 2,),
-                    borderRadius: BorderRadius.all(Radius.elliptical(20, 20))),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(10, 0, 0, 0),
-                            child: SizedBox(
-                              width: 240,
-                              child: Text(Menu[index]['menu'],
-                                style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold, color: Color.fromARGB(200, 200, 1, 80),),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ),
-                          SizedBox(height: 5,),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
+            ],
+          ),
+      
+          SizedBox(height: 10),
+      
+          Container(
+            padding: EdgeInsets.only(left: 8, right: 8),
+            height: 500,
+            child: ListView.builder(
+              itemCount: Menu.length,
+              itemBuilder: (BuildContext context, int index) {
+              return  Container(
+                  height: 90, // width: 180,
+                  child: Card(
+                    elevation: 5,
+                    shape: RoundedRectangleBorder(
+                      side: BorderSide(color: Color.fromARGB(200, 200, 1, 80), width: 2,),
+                      borderRadius: BorderRadius.all(Radius.elliptical(20, 20))),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Padding(
-                                padding: const EdgeInsets.fromLTRB(12, 0, 0, 0),
-                                child: Text('${Menu[index]['price']} 원',
-                                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Color.fromARGB(255, 75, 75, 75),),
+                                padding: const EdgeInsets.fromLTRB(10, 0, 0, 0),
+                                child: SizedBox(
+                                  child: Text(Menu[index]['menu'],
+                                    style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold, color: Color.fromARGB(200, 200, 1, 80),),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                 ),
+                              ),
+                              SizedBox(height: 5,),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.fromLTRB(12, 0, 0, 0),
+                                    child: Text('${Menu[index]['price']} 원',
+                                      style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Color.fromARGB(255, 75, 75, 75),),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
-                        ],
-                      ),
-                      Row(children: [
-                        Container(
-                        width: 40,
-                        height: 30,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              padding: EdgeInsets.zero,
-                              backgroundColor: Color.fromARGB(200, 200, 1, 80)
-                            ),
-                            onPressed: () {
-                              if(menunum[index] == 9){}
-                              else{
-                                setState(() {menunum[index]++;});
-                              }
-                            },
-                            child: Icon(Icons.add)),
                         ),
-                        SizedBox(width: 17),
-                        Text('${menunum[index]}', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color.fromARGB(255, 75, 75, 75),),),
-                        SizedBox(width: 17),
-                        Container(
-                        width: 40,
-                        height: 30,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              padding: EdgeInsets.zero,
-                              backgroundColor: Color.fromARGB(200, 200, 1, 80)
-                            ),
-                            onPressed: () {
-                              if (menunum[index] == 0) {
-                                
-                              }
-                              else {
-                                setState(() {
-                                  menunum[index]--;
-                              });
-                              };
-                            },
-                            child: Icon(Icons.remove)),
-                        ),
-                        SizedBox(width: 12),
-                      ],)
-                  ],)
-                ),
-              );
-            }
-          ),
-        ),
-        SizedBox(height: 15,),
-        ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            padding: EdgeInsets.zero,
-            backgroundColor: Color.fromARGB(200, 200, 1, 80)
-          ),
-          onPressed: () {
-            int cur = calorder();
-            int cal = calorder2();
-            setState(() {
-              Navigator.push(
-                context,
-                PageRouteBuilder(
-                  pageBuilder: (_, __, ___) => add_new4(cur, widget.finalorder, widget.finaltime, widget.location, userorder, cal),
-                  transitionDuration: const Duration(seconds: 0),
-                  )
+                        Row(children: [
+                          Container(
+                          width: 40,
+                          height: 30,
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                padding: EdgeInsets.zero,
+                                backgroundColor: Color.fromARGB(200, 200, 1, 80)
+                              ),
+                              onPressed: () {
+                                if(menunum[index] == 9){}
+                                else{
+                                  setState(() {menunum[index]++;});
+                                }
+                              },
+                              child: Icon(Icons.add)),
+                          ),
+                          SizedBox(width: 17),
+                          Text('${menunum[index]}', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color.fromARGB(255, 75, 75, 75),),),
+                          SizedBox(width: 17),
+                          Container(
+                          width: 40,
+                          height: 30,
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                padding: EdgeInsets.zero,
+                                backgroundColor: Color.fromARGB(200, 200, 1, 80)
+                              ),
+                              onPressed: () {
+                                if (menunum[index] == 0) {
+                                  
+                                }
+                                else {
+                                  setState(() {
+                                    menunum[index]--;
+                                });
+                                };
+                              },
+                              child: Icon(Icons.remove)),
+                          ),
+                          SizedBox(width: 12),
+                        ],)
+                    ],)
+                  ),
                 );
-            });
-          }, 
-          child: Text('다음', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15))
-        )
-      ],
+              }
+            ),
+          ),
+          SizedBox(height: 15,),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              padding: EdgeInsets.zero,
+              backgroundColor: Color.fromARGB(200, 200, 1, 80)
+            ),
+            onPressed: () {
+              int cur = calorder();
+              int cal = calorder2();
+              setState(() {
+                Navigator.push(
+                  context,
+                  PageRouteBuilder(
+                    pageBuilder: (_, __, ___) => add_new4(cur, widget.finalorder, widget.finaltime, widget.location, userorder, cal),
+                    transitionDuration: const Duration(seconds: 0),
+                    )
+                  );
+              });
+            }, 
+            child: Text('다음', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15))
+          )
+        ],
+        ),
       )
     );
   }
@@ -823,16 +797,15 @@ class add_new4State extends State<add_new4> {
                           children: [
                             SizedBox(width: 32),
                             SizedBox(
-                                  width: 350,
-                                  child: Text('${widget.location}',
-                                    style: TextStyle(
-                                      fontSize: 17,
-                                      color: Color.fromARGB(200, 200, 1, 80),
-                                      ),
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis
-                                    ),
+                              child: Text('${widget.location}',
+                                style: TextStyle(
+                                  fontSize: 17,
+                                  color: Color.fromARGB(200, 200, 1, 80),
+                                  ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis
                                 ),
+                            ),
                           ],
                         ),
                       ],

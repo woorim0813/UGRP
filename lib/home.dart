@@ -19,7 +19,7 @@ class _HomeScreenState extends State<HomeScreen> {
   List sessions = [];
   List filteredSessions = [];
 
-  void loadsessions () async {
+  Future<List> loadsessions () async {
     var reqbody = {
       "userid": userid,
     };
@@ -32,9 +32,16 @@ class _HomeScreenState extends State<HomeScreen> {
 
     List<dynamic> jsonResponse = json.decode(response.body);
     
-    sessions = jsonResponse;
-    filteredSessions = sessions;
+    return jsonResponse;
   }
+  
+  void waitforsessions() async {
+    sessions = await loadsessions();
+    filteredSessions = sessions;
+    setState(() {});
+  }
+
+
 
   TextEditingController searchController = TextEditingController(text: '');
   String search = '';
@@ -47,19 +54,20 @@ class _HomeScreenState extends State<HomeScreen> {
     String location = filteredSessions[index]['location'];
     int id = filteredSessions[index]['id'];
 
-    setState(() {
-      Navigator.pushAndRemoveUntil(
+    /*Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(
           builder: (context) => ContentPage(name: name, currentorder: currentorder, finalorder: finalorder, finaltime: finaltime, location: location, id: id),
         ),
-        (route) => true
-    );
-    });
-  }
+        (route) => false
+    );*/
 
-  void refresher() {
-    setState(() {});
+    setState(() {
+      Navigator.push(
+        context, MaterialPageRoute(builder:(context) => ContentPage(name: name, currentorder: currentorder, finalorder: finalorder, finaltime: finaltime, location: location, id: id))
+        );
+      }
+    );
   }
 
   ButtonID _selectedButton = ButtonID.Button1;
@@ -75,7 +83,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void runFilter(String Keyword) {
-    List results = [];
+    List results;
     if (Keyword == '전체'){
       results = sessions;
     }
@@ -113,6 +121,13 @@ class _HomeScreenState extends State<HomeScreen> {
   }
   
   @override
+  void initState() {
+    super.initState();
+
+    waitforsessions();
+  }
+
+  @override
   Widget build(BuildContext context) {
     userid = context.watch<UserProvider>().userid;
 
@@ -120,7 +135,6 @@ class _HomeScreenState extends State<HomeScreen> {
       context.read<UserProvider>().inupdate(userid);
     });
 
-    //loadsessions();
     return MaterialApp(
         home: ChangeNotifierProvider<UserProvider>(
           create:(context) => UserProvider(),
@@ -190,7 +204,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   onPressed: () {
                     filteredSessions = sessions;
                     setState(() {
-                      loadsessions();
+                      waitforsessions();
                       runFilter('전체');
                       _changeButtonFontWeight(ButtonID.Button1);
                       search = '';
@@ -205,23 +219,23 @@ class _HomeScreenState extends State<HomeScreen> {
                 SizedBox(
                   height: 12,
                 ),
-                  FloatingActionButton(
-                    onPressed: 
-                    //context.watch<UserProvider>().insession
+                FloatingActionButton(
+                  onPressed: 
                     Provider.of<UserProvider>(context).insession
                     ? null
                     : () {
                       setState(() {
                         Navigator.push(
                         context, MaterialPageRoute(builder:(context) => add_new(),)
-                      );
-                      });
-                    },
-                    backgroundColor: Color.fromARGB(200, 200,1, 80),
-                    elevation: 15,
-                    child: Icon(Icons.add),
-                    heroTag: null,
-                  ),
+                        );
+                      }
+                    );
+                  },
+                  backgroundColor: Color.fromARGB(200, 200,1, 80),
+                  elevation: 15,
+                  child: Icon(Icons.add),
+                  heroTag: null,
+                ),
               ],
             ),
         
@@ -411,26 +425,12 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          ElevatedButton(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                SizedBox(height: 5,),
-                                Text('세션 로드를 위해 새로고침하세요!',
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    color: Color.fromARGB(199, 78, 78, 78),
-                                  ),),
-                                SizedBox(height: 8,),
-                              ],
-                            ), 
-                          onPressed: (){},
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            alignment: Alignment.center,
-                            side: BorderSide(color: Color.fromARGB(199, 78, 78, 78), width: 1), // Background color
-                          ),
-                        ),
+                          Text('로딩 중이다 인간!',
+                            style: TextStyle(
+                              color: Colors.grey,
+                              fontSize: 15,
+                            ),
+                          )
                         ]
                       ),
                     )
@@ -454,8 +454,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         ]
                       ),
                     )
-                  else 
-                    Expanded(
+                  else   
+                  Expanded(
                     child: ListView.builder(
                       // items 변수에 저장되어 있는 모든 값 출력
                       itemCount: filteredSessions.length,
@@ -478,7 +478,24 @@ class _HomeScreenState extends State<HomeScreen> {
                                   borderRadius: BorderRadius.all(Radius.elliptical(20, 20))),
                               child: ListTile(
                                 title: Text(filteredSessions[index]["name"], style:TextStyle(fontWeight: FontWeight.bold, fontSize: 19),maxLines: 1, overflow: TextOverflow.ellipsis,),
-                                onTap: () => cardClickEvent(context, index),
+                                onTap: () {
+                                  String name = filteredSessions[index]['name'];
+                                  int finalorder = filteredSessions[index]['finalorder'];
+                                  int currentorder = filteredSessions[index]['currentorder'];
+                                  int finaltime = filteredSessions[index]['finaltime'];
+                                  String location = filteredSessions[index]['location'];
+                                  int id = filteredSessions[index]['id'];
+
+                                  setState(() {
+                                    Navigator.push(
+                                      context, MaterialPageRoute(builder:(context) => ContentPage(name: name, currentorder: currentorder, finalorder: finalorder, finaltime: finaltime, location: location, id: id))
+                                      );
+                                    }
+                                  );
+
+                                  //Navigator.of(context, rootNavigator: true).pushReplacement(MaterialPageRoute(builder: (context) => new ContentPage(name: name, currentorder: currentorder, finalorder: finalorder, finaltime: finaltime, location: location, id: id)));
+
+                                },
                                 subtitle: Text('음식 종류: ${filteredSessions[index]['category'].toString()}'),
                                 trailing: Text('기타 정보'),
                                 //기타정보 표기를 위해서 ListTile이 아니라 다른 위젯을 고려해야 할 듯
@@ -489,9 +506,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       },
                     ),
                   )
-            ]
-          )
-              ),
+                ]
+              )
+            ),
         ),
     );
   }

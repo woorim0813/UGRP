@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'home.dart';
 import 'more.dart';
 import 'add.dart';
+import 'maps.dart';
 import 'provider.dart';
 import 'package:provider/provider.dart';
 
@@ -18,6 +19,7 @@ class _MainState extends State<Main> {
   static List<Widget> pages = <Widget>[
     HomeScreen(),
     AddScreen(),
+    initialmap(),
     MoreScreen(),
   ];
 
@@ -43,6 +45,10 @@ class _MainState extends State<Main> {
           BottomNavigationBarItem(
             icon: Icon(Icons.abc_outlined),
             label: '나의 세션', 
+            ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.map),
+            label: '지도 보기'
             ),
           BottomNavigationBarItem(
             icon: Icon(Icons.add),
